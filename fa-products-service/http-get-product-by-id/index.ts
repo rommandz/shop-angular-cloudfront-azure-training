@@ -1,15 +1,24 @@
 import { AzureFunction, Context, HttpRequest } from '@azure/functions';
-import { Product } from '../models/Product';
-import { productsMock } from '../mocks/products-mock';
+import { Database } from '@azure/cosmos';
+import { CosmosDb } from '../src/cosmos-db/cosmos-db';
+import { ProductsService } from '../src/services/products.service';
+import { ProductDto } from '../src/dtos/product-dto';
 
 const httpTrigger: AzureFunction = async function (
   context: Context,
   req: HttpRequest,
 ): Promise<void> {
-  context.log('HTTP trigger function processed a request.');
   const productIdParam: string = req.params.id;
-  const product: Product = productsMock.find(
-    (product: Product) => product.id === productIdParam,
+
+  context.log(
+    `HTTP trigger function processed a request with productIdParam=${productIdParam}`,
+  );
+
+  const db: Database = CosmosDb.connect();
+
+  const product: ProductDto = await ProductsService.getProductById(
+    db,
+    productIdParam,
   );
 
   if (!product) {
@@ -23,7 +32,9 @@ const httpTrigger: AzureFunction = async function (
 
   context.res = {
     status: 200,
-    body: product,
+    body: {
+      data: product,
+    },
   };
 };
 
