@@ -4,13 +4,13 @@
   "scripts": {
     "ng": "ng",
     "start": "ng serve",
-    "build": "ng build",
+    "build": "ng build --configuration production",
     "test": "ng test",
     "lint": "ng lint",
     "e2e": "ng e2e",
     "prepare": "husky",
     "lint:format": "npx --no-install lint-staged && npx --no-install pretty-quick --staged",
-    "upload": "az storage blob upload-batch -s './dist/app/browser' -d '$web' --account-name 'storagefrontendne001'"
+    "upload": "az storage blob upload-batch -s './dist/app/browser' -d '$web' --account-name 'storagefrontendne001' --overwrite true"
   },
   "private": true,
   "dependencies": {
