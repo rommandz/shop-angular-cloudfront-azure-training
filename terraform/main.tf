@@ -125,3 +125,64 @@ resource "azurerm_windows_function_app" "products_service" {
     ]
   }
 }
+
+resource "azurerm_cosmosdb_account" "learn_test_app" {
+  location            = "northeurope"
+  name                = "cos-app-learn-sand-ne-003"
+  offer_type          = "Standard"
+  resource_group_name = azurerm_resource_group.product_service_rg.name
+  kind                = "GlobalDocumentDB"
+
+  consistency_policy {
+    consistency_level = "Eventual"
+  }
+
+  capabilities {
+    name = "EnableServerless"
+  }
+
+  geo_location {
+    failover_priority = 0
+    location          = "North Europe"
+  }
+}
+
+resource "azurerm_cosmosdb_sql_database" "learn_products_app" {
+  account_name        = azurerm_cosmosdb_account.learn_test_app.name
+  name                = "products-db"
+  resource_group_name = azurerm_resource_group.product_service_rg.name
+}
+
+resource "azurerm_cosmosdb_sql_container" "products" {
+  account_name        = azurerm_cosmosdb_account.learn_test_app.name
+  database_name       = azurerm_cosmosdb_sql_database.learn_products_app.name
+  name                = "products"
+  partition_key_path  = "/id"
+  resource_group_name = azurerm_resource_group.product_service_rg.name
+
+  # Cosmos DB supports TTL for the records
+  default_ttl = -1
+
+  indexing_policy {
+    excluded_path {
+      path = "/*"
+    }
+  }
+}
+
+resource "azurerm_cosmosdb_sql_container" "stock" {
+  account_name        = azurerm_cosmosdb_account.learn_test_app.name
+  database_name       = azurerm_cosmosdb_sql_database.learn_products_app.name
+  name                = "stock"
+  partition_key_path  = "/id"
+  resource_group_name = azurerm_resource_group.product_service_rg.name
+
+  # Cosmos DB supports TTL for the records
+  default_ttl = -1
+
+  indexing_policy {
+    excluded_path {
+      path = "/*"
+    }
+  }
+}
